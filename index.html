@@ -631,24 +631,13 @@ input[type=number] { -moz-appearance: textfield; }
         <div class="pm-input-wrap"><input type="number" class="pm-input" id="f-riesgoimporte" placeholder="0"><span class="pm-input-unit">€</span></div>
       </div>
 
-      <div class="pm-grid" style="margin-top:8px;">
-        <div class="pm-field">
-          <label class="pm-field-label">Rating estimado</label>
-          <div class="pm-field-hint">B1 si no estás seguro</div>
-          <select class="pm-select" id="f-rating">
-            <option value="A1">A1</option><option value="A2">A2</option><option value="A3">A3</option>
-            <option value="B1" selected>B1</option><option value="B2">B2</option><option value="B3">B3</option>
-            <option value="C1">C1</option><option value="C2">C2</option><option value="C3">C3</option>
-          </select>
-        </div>
-        <div class="pm-field">
+      <div class="pm-field" style="margin-top:8px;">
           <label class="pm-field-label">Antigüedad empresa</label>
           <div class="pm-field-hint">&lt;2 años = sin histórico</div>
           <select class="pm-select" id="f-tipo">
             <option value="sin">Sin histórico (&lt;2 años)</option>
             <option value="con">Con histórico (&gt;2 años)</option>
           </select>
-        </div>
       </div>
 
       <div class="pm-info" id="ffpp-box">
@@ -918,7 +907,7 @@ function buildResults() {
   const c2 = checkCrisis(b2);
   const patrimonioNeto = c1.fp;
   const ffpp = patrimonioNeto + num('f-ampliacion') + num('f-notas');
-  const rating = document.getElementById('f-rating').value;
+  const rating = 'B1';
   const tipo = document.getElementById('f-tipo').value;
 
   // ENISA
@@ -982,7 +971,7 @@ function buildResults() {
       <div class="pm-result-amount">
         <span class="pm-info-label">Importe máximo estimado</span>
         <div class="pm-result-amount-value ${blurClass}" onclick="if(!gateUnlocked)openModal();">${fmt(enisaMax)}</div>
-        <div class="pm-result-amount-detail ${blurClass}" onclick="if(!gateUnlocked)openModal();">Rating ${rating} · ${tipo==='sin'?'Sin':'Con'} histórico · FFPP: ${fmt(ffpp)}</div>
+        <div class="pm-result-amount-detail ${blurClass}" onclick="if(!gateUnlocked)openModal();">${tipo==='sin'?'Sin':'Con'} histórico · FFPP: ${fmt(ffpp)}</div>
       </div>` : ''}
     </div>
 
@@ -1076,7 +1065,6 @@ function submitLead() {
     gastoMensual: num('f-gasto'),
     patrimonioNeto: calcFondosPropios(getBalance('')),
     ampliacion: num('f-ampliacion'),
-    rating: document.getElementById('f-rating').value,
     tipo: document.getElementById('f-tipo').value
   };
 
