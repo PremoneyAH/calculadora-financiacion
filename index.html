@@ -705,14 +705,14 @@ input[type=number] { -moz-appearance: textfield; }
 
 <!-- MODAL -->
 <div class="pm-overlay" id="pm-modal" style="display:none;" onclick="if(event.target===this)closeModal();">
-  <div class="pm-modal">
+  <div class="pm-modal" onclick="event.stopPropagation();">
     <h3>Tu informe personalizado</h3>
     <p class="pm-modal-sub">Déjanos tus datos y desbloquea el análisis completo al instante.</p>
     <div class="pm-field"><label class="pm-field-label">Nombre completo</label><input type="text" class="pm-input" id="lead-nombre" placeholder="Tu nombre" oninput="checkLeadForm()"></div>
     <div class="pm-field"><label class="pm-field-label">Email</label><input type="email" class="pm-input" id="lead-email" placeholder="tu@empresa.com" oninput="checkLeadForm()"></div>
-    <div class="pm-field"><label class="pm-field-label">Teléfono</label><input type="tel" class="pm-input" id="lead-tel" placeholder="+34 600 000 000"></div>
-    <div class="pm-field"><label class="pm-field-label">Nombre de la empresa</label><input type="text" class="pm-input" id="lead-empresa" placeholder="Tu startup"></div>
-    <button class="pm-modal-submit" id="lead-submit" disabled onclick="submitLead()">Desbloquear informe →</button>
+    <div class="pm-field"><label class="pm-field-label">Teléfono</label><input type="tel" class="pm-input" id="lead-tel" placeholder="+34 600 000 000" oninput="checkLeadForm()"></div>
+    <div class="pm-field"><label class="pm-field-label">Nombre de la empresa</label><input type="text" class="pm-input" id="lead-empresa" placeholder="Tu startup" oninput="checkLeadForm()"></div>
+    <button type="button" class="pm-modal-submit" id="lead-submit" disabled onclick="submitLead()">Desbloquear informe →</button>
     <p class="pm-modal-fine">No spam. Un experto de Premoney revisará tu caso.</p>
   </div>
 </div>
@@ -1048,10 +1048,31 @@ function miniBadge(ok, label) {
 function openModal() { document.getElementById('pm-modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('pm-modal').style.display = 'none'; }
 function checkLeadForm() {
-  const n = document.getElementById('lead-nombre').value.trim();
-  const e = document.getElementById('lead-email').value.trim();
-  document.getElementById('lead-submit').disabled = !(n && e);
+  var n = document.getElementById('lead-nombre').value.trim();
+  var e = document.getElementById('lead-email').value.trim();
+  var btn = document.getElementById('lead-submit');
+  if (btn) btn.disabled = !(n && e);
 }
+
+// Fallback: attach listeners after DOM is ready (fixes iframe issues)
+document.addEventListener('DOMContentLoaded', function() {
+  var fields = ['lead-nombre', 'lead-email', 'lead-tel', 'lead-empresa'];
+  fields.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', checkLeadForm);
+      el.addEventListener('change', checkLeadForm);
+      el.addEventListener('keyup', checkLeadForm);
+    }
+  });
+  var btn = document.getElementById('lead-submit');
+  if (btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      submitLead();
+    });
+  }
+});
 
 function submitLead() {
   const b1 = getBalance('');
