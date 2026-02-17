@@ -458,8 +458,7 @@ input[type=number] { -moz-appearance: textfield; }
   font-family: inherit; margin-top: 6px;
   transition: opacity var(--transition), background var(--transition);
 }
-.pm-modal-submit:hover:not(:disabled) { background: var(--brand-light); }
-.pm-modal-submit:disabled { background: var(--gray-300); cursor: not-allowed; }
+.pm-modal-submit:hover { background: var(--brand-light); }
 .pm-modal-fine { font-size: 11px; color: var(--gray-400); text-align: center; margin-top: 12px; }
 
 /* Hide steps */
@@ -708,11 +707,11 @@ input[type=number] { -moz-appearance: textfield; }
   <div class="pm-modal" onclick="event.stopPropagation();">
     <h3>Tu informe personalizado</h3>
     <p class="pm-modal-sub">Déjanos tus datos y desbloquea el análisis completo al instante.</p>
-    <div class="pm-field"><label class="pm-field-label">Nombre completo</label><input type="text" class="pm-input" id="lead-nombre" placeholder="Tu nombre" oninput="checkLeadForm()"></div>
-    <div class="pm-field"><label class="pm-field-label">Email</label><input type="email" class="pm-input" id="lead-email" placeholder="tu@empresa.com" oninput="checkLeadForm()"></div>
-    <div class="pm-field"><label class="pm-field-label">Teléfono</label><input type="tel" class="pm-input" id="lead-tel" placeholder="+34 600 000 000" oninput="checkLeadForm()"></div>
-    <div class="pm-field"><label class="pm-field-label">Nombre de la empresa</label><input type="text" class="pm-input" id="lead-empresa" placeholder="Tu startup" oninput="checkLeadForm()"></div>
-    <button type="button" class="pm-modal-submit" id="lead-submit" disabled onclick="submitLead()">Desbloquear informe →</button>
+    <div class="pm-field"><label class="pm-field-label">Nombre completo</label><input type="text" class="pm-input" id="lead-nombre" placeholder="Tu nombre"></div>
+    <div class="pm-field"><label class="pm-field-label">Email</label><input type="email" class="pm-input" id="lead-email" placeholder="tu@empresa.com"></div>
+    <div class="pm-field"><label class="pm-field-label">Teléfono</label><input type="tel" class="pm-input" id="lead-tel" placeholder="+34 600 000 000"></div>
+    <div class="pm-field"><label class="pm-field-label">Nombre de la empresa</label><input type="text" class="pm-input" id="lead-empresa" placeholder="Tu startup"></div>
+    <button type="button" class="pm-modal-submit" id="lead-submit" onclick="submitLead()">Desbloquear informe →</button>
     <p class="pm-modal-fine">No spam. Un experto de Premoney revisará tu caso.</p>
   </div>
 </div>
@@ -1047,44 +1046,27 @@ function miniBadge(ok, label) {
 // ── MODAL ──
 function openModal() { document.getElementById('pm-modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('pm-modal').style.display = 'none'; }
-function checkLeadForm() {
-  var n = document.getElementById('lead-nombre').value.trim();
-  var e = document.getElementById('lead-email').value.trim();
-  var btn = document.getElementById('lead-submit');
-  if (btn) btn.disabled = !(n && e);
-}
-
-// Fallback: attach listeners after DOM is ready (fixes iframe issues)
-document.addEventListener('DOMContentLoaded', function() {
-  var fields = ['lead-nombre', 'lead-email', 'lead-tel', 'lead-empresa'];
-  fields.forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('input', checkLeadForm);
-      el.addEventListener('change', checkLeadForm);
-      el.addEventListener('keyup', checkLeadForm);
-    }
-  });
-  var btn = document.getElementById('lead-submit');
-  if (btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      submitLead();
-    });
-  }
-});
-
 function submitLead() {
-  const b1 = getBalance('');
-  const fp = calcFondosPropios(b1);
-  const tipo = document.getElementById('f-tipo').value;
-  const enisaMax = calcENISAMax(fp, 'B1', tipo);
+  var nombre = document.getElementById('lead-nombre').value.trim();
+  var email = document.getElementById('lead-email').value.trim();
+  var telefono = document.getElementById('lead-tel').value.trim();
+  var empresa = document.getElementById('lead-empresa').value.trim();
 
-  const leadData = {
-    nombre: document.getElementById('lead-nombre').value.trim(),
-    email: document.getElementById('lead-email').value.trim(),
-    telefono: document.getElementById('lead-tel').value.trim(),
-    empresa: document.getElementById('lead-empresa').value.trim(),
+  if (!nombre || !email) {
+    alert('Por favor, introduce al menos tu nombre y email.');
+    return;
+  }
+
+  var b1 = getBalance('');
+  var fp = calcFondosPropios(b1);
+  var tipo = document.getElementById('f-tipo').value;
+  var enisaMax = calcENISAMax(fp, 'B1', tipo);
+
+  var leadData = {
+    nombre: nombre,
+    email: email,
+    telefono: telefono,
+    empresa: empresa,
     ccaa: document.getElementById('f-ccaa').value,
     caja: num('f-caja'),
     gastoMensual: num('f-gasto'),
@@ -1101,19 +1083,11 @@ function submitLead() {
     fecha: new Date().toISOString()
   };
 
-  // ═══════════════════════════════════════════════════
-  // MAKE.COM → NOTION: Pega aquí tu URL de Make.com
-  // ═══════════════════════════════════════════════════
-  var WEBHOOK_URL = 'https://hook.eu1.make.com/5gub425bqggo9q6e6h6j15c531n0p9sy'; // ← PEGA TU URL DE MAKE.COM AQUÍ DENTRO DE LAS COMILLAS
-  if (WEBHOOK_URL) {
-    fetch(WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(leadData)
-    }).catch(function(err) { console.log('Webhook error:', err); });
-  }
-
-  console.log('Lead capturado:', leadData);
+  fetch('https://hook.eu1.make.com/5gub425bqggo9q6e6h6j15c531n0p9sy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(leadData)
+  }).catch(function(err) { console.log('Webhook error:', err); });
 
   gateUnlocked = true;
   closeModal();
